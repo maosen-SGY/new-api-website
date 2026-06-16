@@ -395,6 +395,11 @@ function bindDebugAction(id, ep) {
   responseWrap.hidden = true;
   trigger.textContent = text.viewResponse;
   trigger.onclick = () => {
+    if (!(window.KDC && typeof window.KDC.isLoggedIn === "function" && window.KDC.isLoggedIn())) {
+      const url = (window.KDC && window.KDC.loginUrl) || "https://www.kalodata.com/signup";
+      window.location.href = url;
+      return;
+    }
     const nextHidden = !responseWrap.hidden;
     responseWrap.hidden = nextHidden;
     trigger.textContent = nextHidden ? text.viewResponse : text.hideResponse;

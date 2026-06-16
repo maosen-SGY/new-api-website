@@ -1,5 +1,7 @@
 (() => {
   const STORAGE_KEY = "kdc_settings_v2";
+  const LOGIN_STATE_KEY = "kdc_login_state";
+  const LOGIN_URL = String(window.location.pathname || "").includes("/chat-output-20260612/") ? "../login.html" : "./login.html";
 
   const regionOptions = [
     { code: "US", name: "美国" },
@@ -86,6 +88,7 @@
     "nav.pricing": "定价",
     "nav.center": "个人中心",
     "action.login": "登录",
+    "action.logged_in": "已登录",
     "action.logout": "退出",
     "home.hero.tag": "连接业务与电商数据洞察",
     "home.hero.title": "一个中心，三种载体，持续开放能力",
@@ -330,6 +333,7 @@
     "nav.pricing": "Pricing",
     "nav.center": "Account",
     "action.login": "Sign in",
+    "action.logged_in": "Logged in",
     "action.logout": "Sign out",
     "home.hero.tag": "Connect Business with E-commerce Insights",
     "home.hero.title": "One Center, Three Channels, Continuous Open Capability",
@@ -585,6 +589,7 @@
     language: "zh-CN",
     currency: "USD",
   };
+  let loginState = false;
 
   function loadSettings() {
     try {
@@ -655,35 +660,110 @@
     );
   }
 
+  function readBooleanFlag(value) {
+    if (value === true || value === 1) return true;
+    const normalized = String(value || "").trim().toLowerCase();
+    return ["1", "true", "yes", "y", "logged_in", "login"].includes(normalized);
+  }
+
+  function loadLoginState() {
+    try {
+      const raw = localStorage.getItem(LOGIN_STATE_KEY);
+      if (raw === null) return false;
+      return readBooleanFlag(raw);
+    } catch {
+      return false;
+    }
+  }
+
+  function saveLoginState(next) {
+    try {
+      localStorage.setItem(LOGIN_STATE_KEY, next ? "1" : "0");
+    } catch {}
+  }
+
+  function renderLoginButtons() {
+    const loggedIn = !!loginState;
+    const label = loggedIn ? t("action.logged_in") : t("action.login");
+    document.querySelectorAll('button[data-i18n="action.login"]').forEach((button) => {
+      button.textContent = label;
+      button.dataset.loginState = loggedIn ? "logged_in" : "logged_out";
+      button.title = label;
+    });
+  }
+
+  function setLoginState(next, shouldNotify = true) {
+    loginState = !!next;
+    saveLoginState(loginState);
+    renderLoginButtons();
+    if (shouldNotify) dispatchSettingsChanged();
+  }
+
+  function detectLoginState() {
+    const loginBtn = document.querySelector('button[data-i18n="action.login"]');
+    if (loginBtn && loginBtn.dataset.loginState) {
+      return loginBtn.dataset.loginState === "logged_in";
+    }
+    return !!loginState;
+  }
+
+  function goToLogin() {
+    window.location.href = LOGIN_URL;
+  }
+
+  function initAccessGuards() {
+    loginState = loadLoginState();
+    renderLoginButtons();
+
+    const path = String(window.location.pathname || "").toLowerCase();
+    if ((path.endsWith("/center.html") || path.endsWith("\\center.html")) && !detectLoginState()) {
+      goToLogin();
+      return;
+    }
+
+    const centerLinks = document.querySelectorAll('a[href="./center.html"], a[href="../center.html"], a[data-i18n="nav.center"]');
+    centerLinks.forEach((link) => {
+      link.addEventListener("click", (event) => {
+        if (detectLoginState()) return;
+        event.preventDefault();
+        goToLogin();
+      });
+    });
+
+    const loginButtons = document.querySelectorAll('button[data-i18n="action.login"]');
+    loginButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        setLoginState(!detectLoginState());
+      });
+    });
+  }
+
   function initGlobalSelectors() {
     const regionSelect = document.getElementById("global-region");
     const languageSelect = document.getElementById("global-language");
     const currencySelect = document.getElementById("global-currency");
-    if (!regionSelect || !languageSelect || !currencySelect) return;
+    if (!regionSelect && !languageSelect && !currencySelect) return;
 
-    buildOptions(regionSelect, regionOptions);
-    buildOptions(languageSelect, languageOptions);
-    buildOptions(currencySelect, currencyOptions);
-    regionSelect.value = state.region;
-    languageSelect.value = state.language;
-    currencySelect.value = state.currency;
+    if (regionSelect) {
+      // Country selector is intentionally removed from this bundle.
+      regionSelect.remove();
+    }
 
-    regionSelect.addEventListener("change", () => {
-      state.region = regionSelect.value;
-      saveSettings(state);
-      dispatchSettingsChanged();
-    });
-    languageSelect.addEventListener("change", () => {
-      state.language = languageSelect.value;
-      saveSettings(state);
-      applyI18n();
-      dispatchSettingsChanged();
-    });
-    currencySelect.addEventListener("change", () => {
-      state.currency = currencySelect.value;
-      saveSettings(state);
-      dispatchSettingsChanged();
-    });
+    if (languageSelect) {
+      buildOptions(languageSelect, languageOptions);
+      languageSelect.value = state.language;
+      languageSelect.addEventListener("change", () => {
+        state.language = languageSelect.value;
+        saveSettings(state);
+        applyI18n();
+        dispatchSettingsChanged();
+      });
+    }
+
+    if (currencySelect) {
+      // Currency selector is intentionally removed from this bundle.
+      currencySelect.remove();
+    }
   }
 
   function initSupportWidget() {
@@ -732,6 +812,10 @@
     updateQrState();
 
     fab.addEventListener("click", () => {
+      if (!detectLoginState()) {
+        goToLogin();
+        return;
+      }
       modal.classList.add("open");
       modal.setAttribute("aria-hidden", "false");
     });
@@ -749,6 +833,7 @@
     });
 
     window.addEventListener("kdc:settingsChanged", () => {
+      renderLoginButtons();
       fab.title = t("support.icon.label");
       fabText.textContent = t("support.fab.cta");
       qrTitle.textContent = t("support.qr.title");
@@ -769,6 +854,10 @@
     tf: (key, vars = {}) => tf(key, vars, state.language),
     formatMoneyCNY: (valueInCNY, currencyCode) => formatMoneyCNY(valueInCNY, currencyCode || state.currency),
     isZh: () => String(state.language).startsWith("zh"),
+    isLoggedIn: () => detectLoginState(),
+    setLoggedIn: (next) => setLoginState(!!next),
+    loginUrl: LOGIN_URL,
+    goToLogin,
     regionOptions,
     languageOptions,
     currencyOptions,
@@ -776,8 +865,10 @@
 
   document.addEventListener("DOMContentLoaded", () => {
     initGlobalSelectors();
+    initAccessGuards();
     initSupportWidget();
     applyI18n();
+    renderLoginButtons();
     dispatchSettingsChanged();
   });
 })();
