@@ -33,9 +33,7 @@
           <a class="active" href="./pricing.html" data-i18n="nav.pricing">定价</a>
           <a href="./center.html" data-i18n="nav.center">个人中心</a>
           <span class="global-controls">
-            <select id="global-region" aria-label="region"></select>
             <select id="global-language" aria-label="language"></select>
-            <select id="global-currency" aria-label="currency"></select>
           </span>
           <button class="btn" data-i18n="action.login">登录</button>
         </nav>
@@ -77,6 +75,9 @@
           note: "* 榜单接口：每次调用扣减 = 0.1 × (page/5)；详情接口：每次调用扣减 = 0.1。",
           pointsTitle: "积分余额",
           pointsText: "当前您的积分数为：{points}",
+          pointsLoginPrefix: "请",
+          pointsLoginAction: "登录",
+          pointsLoginSuffix: "后查看积分余额",
           pointsHint: "积分可用于所有接口调用，扣减规则统一。",
           rechargePrefix: "可前往 ",
           rechargeLink: "积分充值页面",
@@ -106,6 +107,9 @@
           note: "* Rank APIs: deduction per call = 0.1 × (page/5); Detail APIs: deduction per call = 0.1.",
           pointsTitle: "Point Balance",
           pointsText: "Your current points: {points}",
+          pointsLoginPrefix: "Please ",
+          pointsLoginAction: "sign in",
+          pointsLoginSuffix: " to view your point balance",
           pointsHint: "Points can be used for all API calls with unified deduction rules.",
           rechargePrefix: "Go to ",
           rechargeLink: "Points Recharge Page",
@@ -168,13 +172,27 @@
 
       function renderPageTexts() {
         const t = activeTexts();
+        const loggedIn = window.KDC?.isLoggedIn?.();
+        const pointsTextEl = document.getElementById("pointsText");
+        const pointsHintEl = document.getElementById("pointsHint");
+        const rechargeHintEl = document.getElementById("rechargeHint");
         document.getElementById("pricingTitle").textContent = t.title;
         document.getElementById("pricingDesc").innerHTML = t.desc;
         document.getElementById("pricingNote").textContent = t.note;
         document.getElementById("pointsTitle").textContent = t.pointsTitle;
-        document.getElementById("pointsText").textContent = t.pointsText.replace("{points}", currentPoints);
-        document.getElementById("pointsHint").textContent = t.pointsHint;
-        document.getElementById("rechargeHint").innerHTML = `${t.rechargePrefix}<a href="./recharge.html" id="rechargeLinkText">${t.rechargeLink}</a>${t.rechargeSuffix}`;
+        if (loggedIn) {
+          pointsTextEl.classList.add("points");
+          pointsTextEl.textContent = t.pointsText.replace("{points}", currentPoints);
+          pointsHintEl.style.display = "";
+          rechargeHintEl.style.display = "";
+          pointsHintEl.textContent = t.pointsHint;
+          rechargeHintEl.innerHTML = `${t.rechargePrefix}<a href="./recharge.html" id="rechargeLinkText">${t.rechargeLink}</a>${t.rechargeSuffix}`;
+          return;
+        }
+        pointsTextEl.classList.remove("points");
+        pointsTextEl.innerHTML = `${t.pointsLoginPrefix}<a href="${window.KDC?.loginUrl || "https://www.kalodata.com/signup"}">${t.pointsLoginAction}</a>${t.pointsLoginSuffix}`;
+        pointsHintEl.style.display = "none";
+        rechargeHintEl.style.display = "none";
       }
 
       function renderAll() {
