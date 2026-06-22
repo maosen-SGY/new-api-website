@@ -745,7 +745,7 @@
     if (!regionSelect && !languageSelect && !currencySelect) return;
 
     if (regionSelect) {
-      // Country selector is intentionally removed from this bundle.
+      // Country selector is intentionally removed.
       regionSelect.remove();
     }
 
@@ -761,7 +761,7 @@
     }
 
     if (currencySelect) {
-      // Currency selector is intentionally removed from this bundle.
+      // Currency selector is intentionally removed.
       currencySelect.remove();
     }
   }

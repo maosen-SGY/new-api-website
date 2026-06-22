@@ -294,6 +294,21 @@ const moduleNameEN = {
   直播: "Livestream",
 };
 
+const endpointRateLimit = {
+  "category-rank": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "category-detail": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "shop-rank": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "shop-detail": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "creator-rank": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "creator-detail": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "product-rank": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "product-detail": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "video-rank": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "video-detail": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "live-rank": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+  "live-detail": { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" },
+};
+
 const debugUiText = {
   zh: {
     title: "接口调试",
@@ -395,11 +410,6 @@ function bindDebugAction(id, ep) {
   responseWrap.hidden = true;
   trigger.textContent = text.viewResponse;
   trigger.onclick = () => {
-    if (!(window.KDC && typeof window.KDC.isLoggedIn === "function" && window.KDC.isLoggedIn())) {
-      const url = (window.KDC && window.KDC.loginUrl) || "https://www.kalodata.com/signup";
-      window.location.href = url;
-      return;
-    }
     const nextHidden = !responseWrap.hidden;
     responseWrap.hidden = nextHidden;
     trigger.textContent = nextHidden ? text.viewResponse : text.hideResponse;
@@ -488,6 +498,11 @@ function renderEndpoint(id) {
   document.getElementById("endpoint-intent").textContent = ep.intent;
   document.getElementById("endpoint-method").textContent = ep.method;
   document.getElementById("endpoint-path").textContent = `https://www.kalodata.com${ep.path}`;
+  const rateTitleEl = document.getElementById("endpoint-rate-title");
+  const rateValueEl = document.getElementById("endpoint-rate-limit");
+  const rate = endpointRateLimit[id] || { zh: "每秒最多 20 次调用", en: "Max 20 requests/second" };
+  if (rateTitleEl) rateTitleEl.textContent = isZh() ? "接口调用限制" : "API Rate Limit";
+  if (rateValueEl) rateValueEl.textContent = isZh() ? rate.zh : rate.en;
   fillTable("request-body", ep.request, "request");
   fillTable("response-body", ep.response, "response");
   setDebugSectionText();
