@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kalodata 开放平台中心 - API 文档</title>
-    <link rel="stylesheet" href="../styles.css?v=20260612-2" />
+    <link rel="stylesheet" href="./styles.css?v=20260612-2" />
   </head>
   <body>
     <header class="site-header">
@@ -60,6 +60,10 @@
             <strong data-i18n="docs.integration.title">对接方式</strong>
             <p data-i18n="docs.integration.desc">所有接口采用 HTTP POST + JSON，通过请求头 secret-key 鉴权。公共请求参数为 region / language / currency / date_range。本页面仅展示接口结构，不提供在线调试。</p>
           </div>
+          <div class="callout">
+            <strong id="endpoint-rate-title">接口调用限制</strong>
+            <p id="endpoint-rate-limit">-</p>
+          </div>
 
           <section class="block">
             <h3 data-i18n="docs.req.title">请求参数（入参）</h3>
@@ -114,7 +118,7 @@
       </section>
     </main>
 
-    <script src="../app.js?v=20260612-6"></script>
-    <script src="../docs.js?v=20260612-3"></script>
+    <script src="./app.js?v=20260612-6"></script>
+    <script src="./docs.js?v=20260612-3"></script>
   </body>
 </html>

@@ -4,16 +4,78 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Kalodata 本地交付 - 定价</title>
-    <link rel="stylesheet" href="./styles.css" />
-    <link rel="stylesheet" href="../styles.css?v=20260612-2" />
+    <link rel="stylesheet" href="./chat-output-20260612/styles.css" />
+    <link rel="stylesheet" href="./styles.css?v=20260612-2" />
     <style>
       #pointsPanel {
         position: sticky;
         top: 88px;
       }
-
       #rechargeHint a {
         color: #2f6bff;
+      }
+      .poster-carousel {
+        margin-top: 16px;
+        padding: 16px;
+      }
+      .poster-carousel-frame {
+        border: 1px solid #d7e5ff;
+        border-radius: 14px;
+        background: #f8fbff;
+        overflow: hidden;
+      }
+      .poster-slide {
+        display: none;
+        min-height: 280px;
+        padding: 22px;
+      }
+      .poster-slide.is-active {
+        display: block;
+      }
+      .poster-slide h3 {
+        margin: 0 0 10px;
+        font-size: 26px;
+      }
+      .poster-slide p {
+        margin: 0;
+        max-width: 560px;
+        font-size: 15px;
+        line-height: 1.75;
+      }
+      .poster-slide.theme-a {
+        color: #fff;
+        background: linear-gradient(140deg, #2f6bff 0%, #5f8fff 46%, #8baeff 100%);
+      }
+      .poster-slide.theme-b {
+        color: #fff;
+        background: linear-gradient(140deg, #4b2fff 0%, #7a54ff 48%, #9d8cff 100%);
+      }
+      .poster-slide.theme-c {
+        color: #fff;
+        background: linear-gradient(140deg, #0d7f67 0%, #11a787 48%, #45c8aa 100%);
+      }
+      .poster-carousel-actions {
+        margin-top: 10px;
+        display: flex;
+        justify-content: flex-end;
+      }
+      .poster-dots {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .poster-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+        background: #c6d9ff;
+        border: 0;
+        padding: 0;
+        cursor: pointer;
+      }
+      .poster-dot.is-active {
+        width: 20px;
+        background: #2f6bff;
       }
     </style>
   </head>
@@ -47,6 +109,25 @@
           计费方式说明：按单个接口维度计费。详情接口每次调用消耗 <strong>0.1 积分</strong>；榜单接口每次调用扣减积分 = <strong>0.1 × (page/5)</strong>。
         </p>
       </section>
+      <section class="card poster-carousel" aria-label="活动海报轮播">
+        <div class="poster-carousel-frame">
+          <article class="poster-slide theme-a is-active">
+            <h3>限时活动 · API 调用礼包</h3>
+            <p>新用户完成登录并开通接口，可参与本月积分加赠活动，按调用量阶梯赠送额外积分。</p>
+          </article>
+          <article class="poster-slide theme-b">
+            <h3>企业专享 · 接口联调支持</h3>
+            <p>企业客户提交需求后可获得专属联调窗口，支持接口参数梳理、调用排障与数据校验。</p>
+          </article>
+          <article class="poster-slide theme-c">
+            <h3>增长激励 · 连续调用返积分</h3>
+            <p>当月调用达成指定门槛后，系统次日自动返还活动积分，可继续用于榜单/详情接口调用。</p>
+          </article>
+        </div>
+        <div class="poster-carousel-actions">
+          <div id="posterDots" class="poster-dots" aria-label="轮播指示点"></div>
+        </div>
+      </section>
 
       <section class="section layout">
         <article>
@@ -58,14 +139,12 @@
           <h2 id="pointsTitle">积分余额</h2>
           <p class="points" id="pointsText">当前您的积分数为：xx</p>
           <p class="muted" id="pointsHint">积分可用于所有接口调用，扣减规则统一。</p>
-          <p class="section muted" id="rechargeHint">
-            可前往 <a href="./recharge.html" id="rechargeLinkText">积分充值页面</a> 充值。
-          </p>
+          <p class="section muted" id="rechargeHint">可前往 <a href="./recharge.html" id="rechargeLinkText">积分充值页面</a> 充值。</p>
         </aside>
       </section>
     </main>
 
-    <script src="../app.js?v=20260612-6"></script>
+    <script src="./app.js?v=20260612-6"></script>
     <script>
       const currentPoints = "xx";
       const pageTexts = {
@@ -200,7 +279,33 @@
         renderProducts();
       }
 
+      function initPosterCarousel() {
+        const slides = Array.from(document.querySelectorAll(".poster-slide"));
+        const dotsWrap = document.getElementById("posterDots");
+        if (!slides.length || !dotsWrap) return;
+
+        let current = 0;
+        const dots = slides.map((_, idx) => {
+          const btn = document.createElement("button");
+          btn.className = "poster-dot";
+          btn.type = "button";
+          btn.ariaLabel = `Jump to slide ${idx + 1}`;
+          btn.addEventListener("click", () => showSlide(idx));
+          dotsWrap.appendChild(btn);
+          return btn;
+        });
+
+        function showSlide(idx) {
+          current = (idx + slides.length) % slides.length;
+          slides.forEach((slide, i) => slide.classList.toggle("is-active", i === current));
+          dots.forEach((dot, i) => dot.classList.toggle("is-active", i === current));
+        }
+
+        showSlide(0);
+      }
+
       renderAll();
+      initPosterCarousel();
       window.addEventListener("kdc:settingsChanged", renderAll);
     </script>
   </body>
