@@ -7,13 +7,6 @@
     <link rel="stylesheet" href="./chat-output-20260612/styles.css" />
     <link rel="stylesheet" href="./styles.css?v=20260612-2" />
     <style>
-      #pointsPanel {
-        position: sticky;
-        top: 88px;
-      }
-      #rechargeHint a {
-        color: #2f6bff;
-      }
       .poster-carousel {
         margin-top: 16px;
         padding: 16px;
@@ -77,6 +70,119 @@
         width: 20px;
         background: #2f6bff;
       }
+      .pricing-rules {
+        margin-top: 18px;
+        padding: 24px;
+      }
+      .pricing-rules-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+      .pricing-rules-badge {
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        color: #2752c8;
+        background: #edf3ff;
+        border: 1px solid #d4e2ff;
+      }
+      .pricing-rules h2 {
+        margin: 0;
+      }
+      .pricing-rules h3 {
+        margin: 0 0 10px;
+        font-size: 18px;
+      }
+      .pricing-rules p {
+        margin: 8px 0;
+        line-height: 1.75;
+      }
+      .rule-block {
+        margin-top: 14px;
+        padding: 16px;
+        border: 1px solid #e3ebff;
+        border-radius: 14px;
+        background: #ffffff;
+        box-shadow: 0 6px 16px rgba(28, 67, 153, 0.05);
+      }
+      .pricing-rules .rule-note {
+        margin: 0 0 14px;
+        padding: 10px 12px;
+        border: 1px solid #dce7ff;
+        border-radius: 10px;
+        background: #f8fbff;
+      }
+      .table-wrap {
+        overflow-x: auto;
+        border-radius: 10px;
+      }
+      .pricing-rules table {
+        width: 100%;
+        min-width: 680px;
+        border-collapse: separate;
+        border-spacing: 0;
+        margin-top: 10px;
+        background: #fff;
+      }
+      .pricing-rules th,
+      .pricing-rules td {
+        border-right: 1px solid #e5ecff;
+        border-bottom: 1px solid #e5ecff;
+        padding: 10px;
+        text-align: left;
+        vertical-align: top;
+        line-height: 1.65;
+      }
+      .pricing-rules td[rowspan] {
+        background: #fbfdff;
+        font-size: 13px;
+      }
+      .pricing-rules th {
+        background: #f4f8ff;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .pricing-rules table tr th:first-child,
+      .pricing-rules table tr td:first-child {
+        border-left: 1px solid #e5ecff;
+      }
+      .pricing-rules table thead tr:first-child th {
+        border-top: 1px solid #e5ecff;
+      }
+      .pricing-rules table thead tr:first-child th:first-child {
+        border-top-left-radius: 10px;
+      }
+      .pricing-rules table thead tr:first-child th:last-child {
+        border-top-right-radius: 10px;
+      }
+      .pricing-rules table tbody tr:last-child td:first-child {
+        border-bottom-left-radius: 10px;
+      }
+      .pricing-rules table tbody tr:last-child td:last-child {
+        border-bottom-right-radius: 10px;
+      }
+      .pricing-rules ul {
+        margin: 8px 0 0;
+        padding-left: 20px;
+      }
+      .pricing-rules li {
+        margin: 6px 0;
+      }
+      @media (max-width: 760px) {
+        .pricing-rules {
+          padding: 16px;
+        }
+        .pricing-rules-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .rule-block {
+          padding: 12px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -129,154 +235,185 @@
         </div>
       </section>
 
-      <section class="section layout">
-        <article>
-          <div class="products" id="productGrid"></div>
-          <p class="muted section" id="pricingNote">* 榜单接口：每次调用扣减 = 0.1 × (page/5)；详情接口：每次调用扣减 = 0.1。</p>
-        </article>
-
-        <aside class="card aside" id="pointsPanel">
-          <h2 id="pointsTitle">积分余额</h2>
-          <p class="points" id="pointsText">当前您的积分数为：xx</p>
-          <p class="muted" id="pointsHint">积分可用于所有接口调用，扣减规则统一。</p>
-          <p class="section muted" id="rechargeHint">可前往 <a href="./recharge.html" id="rechargeLinkText">积分充值页面</a> 充值。</p>
-        </aside>
+      <section class="card pricing-rules" id="pricingRulesPanel">
+        <div class="pricing-rules-header">
+          <h2 id="rulesTitle">API 收费规则</h2>
+          <span class="pricing-rules-badge" id="rulesBadge">实时生效规则</span>
+        </div>
+        <div id="rulesContent"></div>
       </section>
     </main>
 
     <script src="./app.js?v=20260612-6"></script>
     <script>
-      const currentPoints = "xx";
       const pageTexts = {
         zh: {
           title: "按需调用 + 灵活扩容",
-          desc: "计费方式说明：按单个接口维度计费。详情接口每次调用消耗 <strong>0.1 积分</strong>；榜单接口每次调用扣减积分 = <strong>0.1 × (page/5)</strong>。",
-          note: "* 榜单接口：每次调用扣减 = 0.1 × (page/5)；详情接口：每次调用扣减 = 0.1。",
-          pointsTitle: "积分余额",
-          pointsText: "当前您的积分数为：{points}",
-          pointsLoginPrefix: "请",
-          pointsLoginAction: "登录",
-          pointsLoginSuffix: "后查看积分余额",
-          pointsHint: "积分可用于所有接口调用，扣减规则统一。",
-          rechargePrefix: "可前往 ",
-          rechargeLink: "积分充值页面",
-          rechargeSuffix: " 充值。",
-          endpoint: "接口：",
-          rulePrefix: "扣减规则：",
-          rankRule: "每调用 1 次消耗 0.1 × (page/5) 积分",
-          detailRule: "每调用 1 次消耗 0.1 积分",
-          names: {
-            categoryRank: "类目榜单（1次）",
-            categoryDetail: "类目详情（1次）",
-            shopRank: "店铺榜单（1次）",
-            shopDetail: "店铺详情（1次）",
-            creatorRank: "达人榜单（1次）",
-            creatorDetail: "达人详情（1次）",
-            productRank: "商品榜单（1次）",
-            productDetail: "商品详情（1次）",
-            videoRank: "视频榜单（1次）",
-            videoDetail: "视频详情（1次）",
-            liveRank: "直播榜单（1次）",
-            liveDetail: "直播详情（1次）",
-          },
+          desc: "定价策略采用基础定价 + 后返。后返以积分形式按月返还。",
+          rulesTitle: "API 收费规则",
+          rulesBadge: "实时生效规则",
+          intro:
+            "定价策略采用的是基础定价 + 后返。后返以积分的形式返回，按照月维度进行返还。",
+          remark:
+            "备注：作为参考，1 积分约为 0.1 美元，最终实际价值由积分购买规则决定。",
+          baseTitle: "基础定价",
+          rebateTitle: "后返规则",
+          rebateDesc:
+            "按照月维度分三档：0~3 万调用/月不返回积分；3 万~30 万调用/月按 0.02 积分/次返还；超过 30 万调用/月按 0.05 积分/次返还。",
+          exampleTitle: "举例说明",
+          exampleDesc: "假设一个客户每月调用量级为 150 万次/月：",
+          exampleSteps: [
+            "首先 Kalodata 按基础定价扣费：15 万积分。",
+            "到月底按后返规则，总共返回 6.54 万积分，相当于降价 40%。",
+          ],
+          baseHeaders: ["榜单接口", "收费细则", "详情接口", "收费细则"],
+          baseApiPairs: [
+            ["类目榜单", "类目详情"],
+            ["店铺榜单", "店铺详情"],
+            ["达人榜单", "达人详情"],
+            ["商品榜单", "商品详情"],
+            ["视频榜单", "视频详情"],
+            ["直播榜单", "直播详情"],
+          ],
+          baseRankRule:
+            "单次调用费用 = 0.1 积分 × Ceiling(返回数据条数/100)。Ceiling 代表向上取整。例如返回 101 条数据时，费用 = 0.1 × Ceiling(101/100) = 0.2 积分。",
+          baseDetailRule: "按照单次调用，每次调用收费 0.1 积分。",
+          rebateHeaders: ["月调用次数下限（大于）", "月调用次数上限（小于等于）", "返回积分/次"],
+          rebateRows: [
+            ["0", "3 万", "0 积分"],
+            ["3 万", "30 万", "0.02 积分"],
+            ["30 万", "无穷", "0.05 积分"],
+          ],
+          exampleHeaders: ["调用区间下限", "调用区间上限", "返回的积分"],
+          exampleRows: [
+            ["0", "3 万", "0"],
+            ["3 万", "30 万", "0.54 万（(30-3) × 0.02）"],
+            ["30 万", "150 万", "6 万（(150-30) × 0.05）"],
+          ],
         },
         en: {
           title: "On-demand Calls + Flexible Scaling",
-          desc: "Billing: per endpoint. Detail APIs cost <strong>0.1 point</strong> per call; rank APIs cost <strong>0.1 × (page/5)</strong> per call.",
-          note: "* Rank APIs: deduction per call = 0.1 × (page/5); Detail APIs: deduction per call = 0.1.",
-          pointsTitle: "Point Balance",
-          pointsText: "Your current points: {points}",
-          pointsLoginPrefix: "Please ",
-          pointsLoginAction: "sign in",
-          pointsLoginSuffix: " to view your point balance",
-          pointsHint: "Points can be used for all API calls with unified deduction rules.",
-          rechargePrefix: "Go to ",
-          rechargeLink: "Points Recharge Page",
-          rechargeSuffix: " to top up.",
-          endpoint: "API: ",
-          rulePrefix: "Rule: ",
-          rankRule: "Each call consumes 0.1 × (page/5) points",
-          detailRule: "Each call consumes 0.1 points",
-          names: {
-            categoryRank: "Category Rank (1 call)",
-            categoryDetail: "Category Detail (1 call)",
-            shopRank: "Shop Rank (1 call)",
-            shopDetail: "Shop Detail (1 call)",
-            creatorRank: "Creator Rank (1 call)",
-            creatorDetail: "Creator Detail (1 call)",
-            productRank: "Product Rank (1 call)",
-            productDetail: "Product Detail (1 call)",
-            videoRank: "Video Rank (1 call)",
-            videoDetail: "Video Detail (1 call)",
-            liveRank: "Livestream Rank (1 call)",
-            liveDetail: "Livestream Detail (1 call)",
-          },
+          desc: "Pricing uses Base Pricing + Monthly Rebate. Rebates are returned as points.",
+          rulesTitle: "API Pricing Rules",
+          rulesBadge: "Live Pricing Policy",
+          intro:
+            "The pricing policy consists of base pricing plus a monthly rebate. The rebate is returned in points.",
+          remark:
+            "Note: For reference, 1 point is approximately equivalent to 0.1 USD. The actual value is determined by point purchase rules.",
+          baseTitle: "Base Pricing",
+          rebateTitle: "Monthly Rebate Rules",
+          rebateDesc:
+            "Three monthly tiers apply: 0-30k calls/month gets no rebate; 30k-300k calls/month gets 0.02 points per call; above 300k calls/month gets 0.05 points per call.",
+          exampleTitle: "Example",
+          exampleDesc: "Assume a customer has 1.5 million calls per month:",
+          exampleSteps: [
+            "First, Kalodata deducts 150,000 points based on base pricing.",
+            "At month end, the customer receives 65,400 points as rebate, equivalent to about a 40% discount.",
+          ],
+          baseHeaders: ["Rank API", "Charging Detail", "Detail API", "Charging Detail"],
+          baseApiPairs: [
+            ["Category Rank", "Category Detail"],
+            ["Shop Rank", "Shop Detail"],
+            ["Creator Rank", "Creator Detail"],
+            ["Product Rank", "Product Detail"],
+            ["Video Rank", "Video Detail"],
+            ["Livestream Rank", "Livestream Detail"],
+          ],
+          baseRankRule:
+            "Cost per call = 0.1 point × Ceiling(returned rows/100). Ceiling means rounding up. Example: if one call returns 101 rows, cost = 0.1 × Ceiling(101/100) = 0.2 points.",
+          baseDetailRule: "Charged per request: 0.1 point per call.",
+          rebateHeaders: ["Monthly Calls Lower Bound (>)", "Monthly Calls Upper Bound (<=)", "Rebate per Call"],
+          rebateRows: [
+            ["0", "30,000", "0 points"],
+            ["30,000", "300,000", "0.02 points"],
+            ["300,000", "Infinity", "0.05 points"],
+          ],
+          exampleHeaders: ["Range Lower Bound", "Range Upper Bound", "Returned Points"],
+          exampleRows: [
+            ["0", "30,000", "0"],
+            ["30,000", "300,000", "5,400 ((30-3) × 10,000 × 0.02)"],
+            ["300,000", "1,500,000", "60,000 ((150-30) × 10,000 × 0.05)"],
+          ],
         },
       };
-
-      const products = [
-        { nameKey: "categoryRank", path: "/openapi/v1/category/rank", type: "rank" },
-        { nameKey: "categoryDetail", path: "/openapi/v1/category/detail", type: "detail" },
-        { nameKey: "shopRank", path: "/openapi/v1/tiktok/shop/rank", type: "rank" },
-        { nameKey: "shopDetail", path: "/openapi/v1/tiktok/shop/detail", type: "detail" },
-        { nameKey: "creatorRank", path: "/openapi/v1/tiktok/creator/rank", type: "rank" },
-        { nameKey: "creatorDetail", path: "/openapi/v1/tiktok/creator/detail", type: "detail" },
-        { nameKey: "productRank", path: "/openapi/v1/tiktok/product/rank", type: "rank" },
-        { nameKey: "productDetail", path: "/openapi/v1/tiktok/product/detail", type: "detail" },
-        { nameKey: "videoRank", path: "/openapi/v1/tiktok/video/rank", type: "rank" },
-        { nameKey: "videoDetail", path: "/openapi/v1/tiktok/video/detail", type: "detail" },
-        { nameKey: "liveRank", path: "/openapi/v1/tiktok/livestream/rank", type: "rank" },
-        { nameKey: "liveDetail", path: "/openapi/v1/tiktok/livestream/detail", type: "detail" },
-      ];
 
       function activeTexts() {
         const lang = (window.KDC?.settings?.language || "zh-CN").toLowerCase();
         return lang.startsWith("zh") ? pageTexts.zh : pageTexts.en;
       }
 
-      function renderProducts() {
-        const t = activeTexts();
-        document.getElementById("productGrid").innerHTML = products
-          .map(
-            (item) => `
-              <article class="card panel">
-                <h3>${t.names[item.nameKey]}</h3>
-                <p class="muted">${t.endpoint}${item.path}</p>
-                <div class="formula">${t.rulePrefix}${item.type === "rank" ? t.rankRule : t.detailRule}</div>
-              </article>
-            `
-          )
+      function renderTable(headers, rows) {
+        const headHtml = headers.map((head) => `<th>${head}</th>`).join("");
+        const bodyHtml = rows
+          .map((row) => `<tr>${row.map((col) => `<td>${col || "-"}</td>`).join("")}</tr>`)
           .join("");
+        return `
+          <div class="table-wrap">
+            <table>
+              <thead><tr>${headHtml}</tr></thead>
+              <tbody>${bodyHtml}</tbody>
+            </table>
+          </div>
+        `;
+      }
+
+      function renderBaseTable(t) {
+        const headers = t.baseHeaders.map((head) => `<th>${head}</th>`).join("");
+        const pairs = t.baseApiPairs || [];
+        const rowCount = pairs.length || 1;
+        const body = pairs
+          .map((pair, idx) => {
+            const rankCell = idx === 0 ? `<td rowspan="${rowCount}">${t.baseRankRule}</td>` : "";
+            const detailCell = idx === 0 ? `<td rowspan="${rowCount}">${t.baseDetailRule}</td>` : "";
+            return `
+              <tr>
+                <td>${pair[0]}</td>
+                ${rankCell}
+                <td>${pair[1]}</td>
+                ${detailCell}
+              </tr>
+            `;
+          })
+          .join("");
+        return `
+          <div class="table-wrap">
+            <table>
+              <thead><tr>${headers}</tr></thead>
+              <tbody>${body}</tbody>
+            </table>
+          </div>
+        `;
       }
 
       function renderPageTexts() {
         const t = activeTexts();
-        const loggedIn = window.KDC?.isLoggedIn?.();
-        const pointsTextEl = document.getElementById("pointsText");
-        const pointsHintEl = document.getElementById("pointsHint");
-        const rechargeHintEl = document.getElementById("rechargeHint");
         document.getElementById("pricingTitle").textContent = t.title;
         document.getElementById("pricingDesc").innerHTML = t.desc;
-        document.getElementById("pricingNote").textContent = t.note;
-        document.getElementById("pointsTitle").textContent = t.pointsTitle;
-        if (loggedIn) {
-          pointsTextEl.classList.add("points");
-          pointsTextEl.textContent = t.pointsText.replace("{points}", currentPoints);
-          pointsHintEl.style.display = "";
-          rechargeHintEl.style.display = "";
-          pointsHintEl.textContent = t.pointsHint;
-          rechargeHintEl.innerHTML = `${t.rechargePrefix}<a href="./recharge.html" id="rechargeLinkText">${t.rechargeLink}</a>${t.rechargeSuffix}`;
-          return;
-        }
-        pointsTextEl.classList.remove("points");
-        pointsTextEl.innerHTML = `${t.pointsLoginPrefix}<a href="${window.KDC?.loginUrl || "https://www.kalodata.com/signup"}">${t.pointsLoginAction}</a>${t.pointsLoginSuffix}`;
-        pointsHintEl.style.display = "none";
-        rechargeHintEl.style.display = "none";
+        document.getElementById("rulesTitle").textContent = t.rulesTitle;
+        document.getElementById("rulesBadge").textContent = t.rulesBadge;
+        document.getElementById("rulesContent").innerHTML = `
+          <p>${t.intro}</p>
+          <p class="rule-note"><strong>${t.remark}</strong></p>
+          <article class="rule-block">
+            <h3>${t.baseTitle}</h3>
+            ${renderBaseTable(t)}
+          </article>
+          <article class="rule-block">
+            <h3>${t.rebateTitle}</h3>
+            <p>${t.rebateDesc}</p>
+            ${renderTable(t.rebateHeaders, t.rebateRows)}
+          </article>
+          <article class="rule-block">
+            <h3>${t.exampleTitle}</h3>
+            <p>${t.exampleDesc}</p>
+            <ul>${t.exampleSteps.map((item) => `<li>${item}</li>`).join("")}</ul>
+            ${renderTable(t.exampleHeaders, t.exampleRows)}
+          </article>
+        `;
       }
 
       function renderAll() {
         renderPageTexts();
-        renderProducts();
       }
 
       function initPosterCarousel() {
